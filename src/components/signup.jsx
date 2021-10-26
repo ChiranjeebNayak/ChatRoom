@@ -11,11 +11,19 @@ function Signup() {
   const [currentUser, setCurrentUser] = useState(null);
   const [email, setEmail] = useState(null);
   const [password, setPassword] = useState(null);
+  const[name,setName] = useState(null);
+  const [phone,setPhone] = useState(null);
   const emailHandler = (e) => {
     setEmail(e.target.value);
   }
   const passwordHandler = (e) => {
     setPassword(e.target.value);
+  }
+  const nameHandler = (e) => {
+    setName(e.target.value);
+  }
+  const phoneHandler = (e) => {
+    setPhone(e.target.value);
   }
   const formHandler = (e) => {
     e.preventDefault();
@@ -48,6 +56,8 @@ function Signup() {
     const userRef = ref(db, "users/" + uid);
     set(userRef, {
       email: email,
+      phoneno:phone,
+      name:name,
     });
   }
 
@@ -67,9 +77,14 @@ function Signup() {
                   <div className="form-outline form-white mb-4">
                     <label className="form-label" >Email</label>
                     <input type="email" id="email" className="form-control form-control-lg" onChange={emailHandler} />
-
                   </div>
-
+                  <div className="form-outline form-white mb-4">
+                    <label className="form-label" >Name</label>
+                    <input type="text" id="email" className="form-control form-control-lg" onChange={nameHandler} />
+                  </div><div className="form-outline form-white mb-4">
+                    <label className="form-label" >Phone No</label>
+                    <input type="number" id="email" className="form-control form-control-lg" onChange={phoneHandler} />
+                  </div>
                   <div className="form-outline form-white mb-4">
                     <label className="form-label" >Password</label>
                     <input type="password" id="password" className="form-control form-control-lg" onChange={passwordHandler} />
