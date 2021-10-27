@@ -16,7 +16,7 @@ function Chartroom() {
         const db = getDatabase();
 
         var roomId = "0bd5c5dc-33f4-410a-a372-faee700fe52f";//product
-        var uid = uid;//demo
+        var uid = "qwfxYQ2UxQZEyejqdSXdMBxFVS12";//demo
         var today = new Date();
         var hours = (today.getHours() < 10) ? "0"+today.getHours():today.getHours();
         var minutes=(today.getMinutes()< 10) ? "0"+today.getMinutes():today.getMinutes();
