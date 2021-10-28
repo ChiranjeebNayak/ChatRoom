@@ -2,7 +2,8 @@ import { React, useState, useEffect } from 'react'
 import { getDatabase, ref, set } from "firebase/database";
 import FirebaseConfig from "./FirebaseConfig";
 import { initializeApp } from "firebase/app";
-
+import Cryptr from 'cryptr';
+const cryptr = new Cryptr('123');
 function Chartroom() {
     const FireConfig = initializeApp(FirebaseConfig);
     const [message, setMessage] = useState(null);
@@ -14,8 +15,11 @@ function Chartroom() {
         e.preventDefault();
 
         const db = getDatabase();
-
-        var roomId = "0bd5c5dc-33f4-410a-a372-faee700fe52f";//product
+        const encryptedString = cryptr.encrypt(message);
+        const decryptedString = cryptr.decrypt(encryptedString);
+        console.log(encryptedString); 
+        console.log(decryptedString);
+        var roomId = "ec1443cf-beaf-4adb-8ef8-7f90e4e49cee";//gp1
         var uid = "qwfxYQ2UxQZEyejqdSXdMBxFVS12";//demo
         var today = new Date();
         var hours = (today.getHours() < 10) ? "0"+today.getHours():today.getHours();
@@ -24,7 +28,7 @@ function Chartroom() {
         var messageId= Date.now();
         const userRef = ref(db, "ChatRoom/" + roomId + "/Messages/" + messageId+"/"+uid);
         set(userRef, {
-            Message: message,
+            Message: encryptedString,
             Time:time,
         });
         var msgForm= document.getElementById('msgform');
