@@ -4,7 +4,7 @@ var app = express()
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(cors());
-import { initializeApp } from '@firebase/app';
+const { initializeApp } = require("firebase-admin/app");
 const firebaseConfig=require('./config')
 initializeApp(firebaseConfig);
 

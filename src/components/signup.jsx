@@ -8,7 +8,6 @@ import { useHistory } from "react-router-dom";
 
 function Signup() {
   const history = useHistory();
-  const [currentUser, setCurrentUser] = useState(null);
   const [email, setEmail] = useState(null);
   const [password, setPassword] = useState(null);
   const[name,setName] = useState(null);

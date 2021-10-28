@@ -1,10 +1,12 @@
-import { React, useState, useEffect } from 'react'
+import { React, useEffect, useState } from 'react'
 import { getDatabase, ref, set } from "firebase/database";
+
 import FirebaseConfig from "./FirebaseConfig";
 import { initializeApp } from "firebase/app";
 import Cryptr from 'cryptr';
 const cryptr = new Cryptr('123');
-function Chartroom() {
+
+function Chatroom() {
     const FireConfig = initializeApp(FirebaseConfig);
     const [message, setMessage] = useState(null);
     
@@ -38,7 +40,7 @@ function Chartroom() {
         <div className="container border border-primary">
             <div className="mt-5px-5">
                 <div className="h1 text-capitalize text-center text-primary">
-                    chartroom name
+                    chatroom name
                 </div>
                 <div className="text-start border py-2">
                     <p>Hello!!</p>
@@ -55,4 +57,4 @@ function Chartroom() {
     )
 }
 
-export default Chartroom
+export default Chatroom;
