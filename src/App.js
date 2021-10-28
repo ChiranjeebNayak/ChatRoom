@@ -1,10 +1,12 @@
-import React from "react";
-import { BrowserRouter as Router, Route, Switch } from "react-router-dom";
 import 'bootstrap/dist/css/bootstrap.min.css';
-import Signup from "./components/signup";
-import Login from "./components/login";
+
+import { Route, BrowserRouter as Router, Switch } from "react-router-dom";
+
+import Chatroom from "./components/chatroom";
 import Home from "./components/home";
-import Chartroom from "./components/chartroom";
+import Login from "./components/login";
+import React from "react";
+import Signup from "./components/signup";
 
 const App = () => {
   return (
@@ -19,8 +21,8 @@ const App = () => {
         <Route exact path="/home">
           <Home/>
         </Route>
-        <Route exact path="/chartroom">
-          <Chartroom/>
+        <Route exact path="/chatroom">
+          <Chatroom/>
         </Route>
       </Switch>
     </Router>
