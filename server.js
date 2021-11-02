@@ -7,7 +7,7 @@ app.use(cors());
 const { initializeApp } = require("firebase/app");
 const { getAuth } =require("firebase/auth");
 const { createUserWithEmailAndPassword } = require('firebase/auth');
-
+const { signInWithEmailAndPassword } = require('firebase/auth');
 const firebaseConfig=require('./config')
 initializeApp(firebaseConfig);
 
@@ -33,7 +33,7 @@ app.get('/api/signup', function (req, res) {
                 console.log(user.uid);
                 res.send({
                   status:200,
-                  message:`signup done`,
+                  message:`signin done`,
                 })
 
                 // ...
@@ -41,10 +41,24 @@ app.get('/api/signup', function (req, res) {
               .catch((error) => {
                 const errorCode = error.code;
                 const errorMessage = error.message;
-                if (errorCode === "auth/email-already-in-use")
-                  console.log("email already exists");
-                else if (errorCode === "auth/invalid-email") console.log("Invalid Email");
-                else console.log("error message = "+errorMessage)
+                if (errorCode === "auth/email-already-in-use"){
+                  res.send({
+                    status:404,
+                    message:`email already exists`,
+                  })
+                }
+                else if (errorCode === "auth/invalid-email"){
+                  res.send({
+                    status:404,
+                    message:`Invalid Email`,
+                  })
+                }
+                else {
+                  res.send({
+                    status:404,
+                    message:errorMessage,
+                  }) 
+                }
               });
 
 })
@@ -53,37 +67,56 @@ app.get('/api/signup', function (req, res) {
 
 // /* ********************************************Login API ***********************************/
 
-// app.get('/api/login', function (req, res) {
+ app.get('/api/login', function (req, res) {
 
-//     const params = req.body;
+    const params = req.body;
+    const auth = getAuth();
+    var email = params.email;
+    var password = params.password;
 
-//     var email = params.email;
-//     var password = params.password;
+    console.log(`${email} ${password}`);
 
-//     console.log(`${email} ${password}`);
+    signInWithEmailAndPassword(auth, email, password)
+    .then((userCredential) => {
+      // Signed in
+      // const user = userCredential.user;
+      // console.log(userCredential.user);
+      // console.log(userCredential.user.uid);
+      // localStorage.setItem('uid', user.uid);
+      // ...
+      res.send({
+        status:202,
+        message:`signin done`,
+      }) 
+    })
+    .catch((error) => {
+      const errorCode = error.code;
+      const errorMessage = error.message;
+      console.log(errorCode);
+      if (errorCode === "auth/email-already-in-use")
+        alert("email already exists");
+      else if (errorCode === "auth/invalid-email"){
+        
+        res.send({
+          status:404,
+          message:`Invalid Email`,
+        }) 
+      
+      else if(errorCode === "auth/wrong-password"){
+        res.send({
+          status:404,
+          message:`Wrong Password`,
+        }) 
+      }
+      else{
+        res.send({
+          status:404,
+          message:errorMessage,
+        }) 
+      } 
+    });
 
-//     firebase.auth().signInWithEmailAndPassword(auth, email, password)
-//     .then((userCredential) => {
-//       // Signed in
-//       const user = userCredential.user;
-//       console.log(userCredential.user);
-//       console.log(userCredential.user.uid);
-//       localStorage.setItem('uid', user.uid);
-//       // ...
-//     })
-//     .catch((error) => {
-//       const errorCode = error.code;
-//       const errorMessage = error.message;
-//       console.log(errorCode);
-//       if (errorCode === "auth/email-already-in-use")
-//         alert("email already exists");
-//       else if (errorCode === "auth/invalid-email") alert("Invalid Email");
-//       else if (errorCode === "auth/wrong-password") alert("Wrong Password");
-//       else alert(`${errorCode} : ${errorMessage}`);
-
-//     });
-
-// })
+})
 
  /* ********************************************Login API END ***********************************/
 
