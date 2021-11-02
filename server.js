@@ -4,45 +4,52 @@ var app = express()
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(cors());
-const { initializeApp } = require("firebase-admin/app");
+const { initializeApp } = require("firebase/app");
+const { getAuth } =require("firebase/auth");
+const { createUserWithEmailAndPassword } = require('firebase/auth');
+
 const firebaseConfig=require('./config')
 initializeApp(firebaseConfig);
 
 
 
-// /* ********************************************SignUP API ***********************************/
+/* ********************************************SignUP API ***********************************/
 
-// app.get('/api/signup', function (req, res) {
+app.get('/api/signup', function (req, res) {
 
-//     const params = req.body;
+    const params = req.body;
+    var email = params.email;
+    var password = params.password;
+    var name = params.name;
+    var phone = params.phone;
 
-//     var email = params.email;
-//     var password = params.password;
-//     var name = params.name;
-//     var phone = params.phone;
+    console.log(`${email} ${password} ${name} ${phone}`);
 
-//     console.log(`${email} ${password} ${name} ${phone}`);
+            const auth = getAuth();
+            createUserWithEmailAndPassword(auth,email, password)
+              .then((userCredential) => {
+                // Signed in
+                const user = userCredential.user;
+                console.log(user.uid);
+                res.send({
+                  status:200,
+                  message:`signup done`,
+                })
 
-//     firebase.auth().createUserWithEmailAndPassword(email, password)
-//         .then(userData => {
-//             const user = firebase.userCredential.user;
-//             console.log(user.user);
-//             console.log(user.user.uid);
-//             req.send({
-//                 status:4202,
-//                 message:"Sucessfully created"
-//             })
-//         })
-//         .catch(error => {
-//             req.send({
-//                 status:404,
-//                 message:error
-//             })
-//         })
+                // ...
+              })
+              .catch((error) => {
+                const errorCode = error.code;
+                const errorMessage = error.message;
+                if (errorCode === "auth/email-already-in-use")
+                  console.log("email already exists");
+                else if (errorCode === "auth/invalid-email") console.log("Invalid Email");
+                else console.log("error message = "+errorMessage)
+              });
 
-// })
+})
 
-// // /* ********************************************SignUP API END ***********************************/
+// /* ********************************************SignUP API END ***********************************/
 
 // /* ********************************************Login API ***********************************/
 
@@ -86,8 +93,6 @@ app.get("/", (req, res) => {
         message: "sucess",
     })
 })
-
-
 
 
 
