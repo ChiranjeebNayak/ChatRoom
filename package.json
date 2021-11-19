@@ -48,6 +48,7 @@
     ]
   },
   "devDependencies": {
-    "@babel/helper-compilation-targets": "^7.15.4"
+    "@babel/helper-compilation-targets": "^7.15.4",
+    "@types/uuid": "^8.3.3"
   }
 }
