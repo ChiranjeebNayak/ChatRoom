@@ -33,7 +33,7 @@ app.get('/api/signup', function (req, res) {
       console.log(user.uid);
       res.send({
         status: 200,
-        message: `signin done`,
+        message: `signup done`,
       })
 
       // ...
