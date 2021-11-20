@@ -6,14 +6,13 @@ app.use(express.json());
 app.use(cors());
 const { initializeApp } = require("firebase/app");
 const { getAuth } = require("firebase/auth");
-const { createUserWithEmailAndPassword } = require('firebase/auth');
-const { signInWithEmailAndPassword } = require('firebase/auth');
+const { createUserWithEmailAndPassword, signInWithEmailAndPassword ,signOut} = require('firebase/auth');
 const { getDatabase, ref, set } = require("firebase/database");
 const firebaseConfig = require('./config');
 initializeApp(firebaseConfig);
 
 
-/* ********************************************SignUP API ***********************************/
+/* ********************************************Signup API ***********************************/
 
 app.get('/api/signup', function (req, res) {
 
@@ -63,11 +62,16 @@ app.get('/api/signup', function (req, res) {
 
 })
 
-// /* ********************************************SignUP API END ***********************************/
+// /* ********************************************Signup API END ***********************************/
 
-// /* ********************************************Login API ***********************************/
 
-app.get('/api/login', function (req, res) {
+
+
+
+
+// /* ********************************************Signin API ***********************************/
+
+app.get('/api/signin', function (req, res) {
 
   const params = req.body;
   const auth = getAuth();
@@ -118,7 +122,35 @@ app.get('/api/login', function (req, res) {
 
 })
 
-/* ********************************************Login API END ***********************************/
+/* ********************************************Signin API END ***********************************/
+
+
+
+
+// /* ********************************************Signout API ***********************************/
+
+app.get('/api/signout', function (req, res) {
+  const auth = getAuth();
+  signOut(auth).then(() => {
+    // Sign-out successful.
+    res.send({
+      status: 200,
+      message: `signout done`,
+    })
+  }).catch((error) => {
+    // An error happened.
+    res.send({
+      status: 404,
+      message: error,
+    })
+  });
+});
+
+
+
+// /* ********************************************Signout API END ***********************************/
+
+
 
 
 
