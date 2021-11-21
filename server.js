@@ -180,11 +180,21 @@ app.post('/api/createChatroom', function (req, res) {
     RoomName: roomName,
     Password: password,
   });
-  const userRef1 = ref(db, "ChatRoom/" + roomId + "/Admins/" +uid);
+  // var currentdate = new Date(); 
+  // var dateTime = currentdate.getDate() + "/"
+  //               + (currentdate.getMonth()+1)  + "/" 
+  //               + currentdate.getFullYear() + " @ "  
+  //               + currentdate.getHours() + ":"  
+  //               + currentdate.getMinutes() + ":" 
+  //               + currentdate.getSeconds();
+  const uids = ["Saab", "Volvo", "BMW"];
+  const userRef1 = ref(db, "ChatRoom/" + roomId );
   set(userRef1, {
-    
+    Admins:uids,
+    password:password,
+    roomName:roomName
   });
-  const userRef2 = ref(db, "users/" + uid + "/ChatRoom/" + roomId);
+  const userRef2 = ref(db, "users/" + uid + "/ChatRoom/" + roomId );
   set(userRef2, {
     RoomName: roomName,
   });
@@ -206,17 +216,23 @@ app.post('/api/createChatroom', function (req, res) {
 
 
 /* ********************************************Add Admin API END ***********************************/
-app.post('api/addadmin', (req, res) => {
+app.post('/api/addadmin', (req, res) => {
   const params = req.body;
-  // var email = params.email;
-  // var chatroom = params.chatroom;
-  // var roomId;
-  // var userUid;
+  var roomId = params.roomId;
+  var uid = params.uid;
+  var userUid;
   const db = getDatabase();
-  var roomId = "LoLp4Q";
   const database = ref(db, 'ChatRoom/' + roomId + '/Admins');
   onValue(database, (snapshot) => {
     const data = snapshot.val();
+    for (var i = 0; i < arr.length; i++) {
+      if (arr[i] === "splice") {
+          var spliced = arr.splice(i, 1);
+          document.write("Removed element: " + spliced + "<br>");
+          document.write("Remaining elements: " + arr);
+      }
+  }
+    data.push(uid);
     res.send({
       status: 202,
       message: data,
@@ -229,6 +245,35 @@ app.post('api/addadmin', (req, res) => {
 
 
 /* ********************************************Add Admin API END ***********************************/
+
+
+
+/* ********************************************Remove Admin API END ***********************************/
+app.delete('/api/removeadmin', (req, res) => {
+  const params = req.body;
+  var roomId = params.roomId;
+  var uid = params.uid;
+  const db = getDatabase();
+  const database = ref(db, 'ChatRoom/' + roomId + '/Admins');
+  onValue(database, (snapshot) => {
+    const data = snapshot.val();
+    for (var i = 0; i < data.length; i++) {
+      if (data[i] === uid) {
+          data.splice(i, 1);
+      }
+  }
+    res.send({
+      status: 202,
+      message: data,
+    })
+  });
+
+
+});
+
+
+
+/* ********************************************Remove Admin API END ***********************************/
 
 // app.get('/api/getuid', (req, res) => {
 //  const auth = getAuth();
@@ -260,7 +305,7 @@ app.post('api/addadmin', (req, res) => {
 
 app.get('/api/read', (req, res) => {
   const db = getDatabase();
-  var roomId = "LoLp4Q";
+  var roomId = "Ic8AZj";
   const database = ref(db, 'ChatRoom/' + roomId + '/Admins');
   onValue(database, (snapshot) => {
     const data = snapshot.val();
