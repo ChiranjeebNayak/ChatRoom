@@ -6,15 +6,17 @@ app.use(express.json());
 app.use(cors());
 const { initializeApp } = require("firebase/app");
 const { getAuth } = require("firebase/auth");
-const { createUserWithEmailAndPassword, signInWithEmailAndPassword ,signOut} = require('firebase/auth');
-const { getDatabase, ref, set } = require("firebase/database");
+const { createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut } = require('firebase/auth');
+const { onAuthStateChanged } = require('firebase/auth')
+const { getDatabase, ref, set, onValue } = require("firebase/database");
 const firebaseConfig = require('./config');
 initializeApp(firebaseConfig);
-
-
+// import uuidv4 from 'uuid/dist/v4'
+const { v4: uuidv4 } = require('uuid');
+var randomstring = require("randomstring");
 /* ********************************************Signup API ***********************************/
 
-app.get('/api/signup', function (req, res) {
+app.post('/api/signup', function (req, res) {
 
   const params = req.body;
   var email = params.email;
@@ -22,7 +24,7 @@ app.get('/api/signup', function (req, res) {
   var name = params.name;
   var phone = params.phone;
 
- // console.log(`${email} ${password} ${name} ${phone}`);
+  // console.log(`${email} ${password} ${name} ${phone}`);
 
   const auth = getAuth();
   createUserWithEmailAndPassword(auth, email, password)
@@ -30,6 +32,7 @@ app.get('/api/signup', function (req, res) {
       // Signed in
       const user = userCredential.user;
       console.log(user.uid);
+
       res.send({
         status: 200,
         message: `signup done`,
@@ -71,14 +74,14 @@ app.get('/api/signup', function (req, res) {
 
 // /* ********************************************Signin API ***********************************/
 
-app.get('/api/signin', function (req, res) {
+app.post('/api/signin', function (req, res) {
 
   const params = req.body;
   const auth = getAuth();
   var email = params.email;
   var password = params.password;
 
- // console.log(`${email} ${password}`);
+  // console.log(`${email} ${password}`);
 
   signInWithEmailAndPassword(auth, email, password)
     .then((userCredential) => {
@@ -156,13 +159,16 @@ app.get('/api/signout', function (req, res) {
 
 // /* ********************************************CreateRoom API ***********************************/
 
-app.get('/api/createchatroom', function (req, res) {
+app.post('/api/createChatroom', function (req, res) {
 
   const params = req.body;
   //const auth = getAuth();
-  var roomName = params.roomname;
+  var roomId = randomstring.generate({
+    length: 6,
+    charset: 'alphanumeric'
+  });
+  var roomName = params.roomName;
   var password = params.password;
-  var roomId = params.roomId;
   var uid = params.uid;
 
   //console.log(`create room details = ${roomName} ${password} ${roomId} ${uid}`);
@@ -174,18 +180,18 @@ app.get('/api/createchatroom', function (req, res) {
     RoomName: roomName,
     Password: password,
   });
-  const userRef1 = ref(db, "ChatRoom/" + roomId + "/Admin");
+  const userRef1 = ref(db, "ChatRoom/" + roomId + "/Admins/" +uid);
   set(userRef1, {
-    uid: uid,
+    
   });
-  const userRef2 = ref(db, "users/" + uid + "/ChartRoom/" + roomId);
+  const userRef2 = ref(db, "users/" + uid + "/ChatRoom/" + roomId);
   set(userRef2, {
     RoomName: roomName,
   });
   console.log(`Chartroom link = https://chat-application-841a0.web.app/#/chat/room/${roomId}`);
   res.send({
     status: 202,
-    message: `Room Created`,
+    message: `https://chat-application-841a0.web.app/#/chat/room/${roomId}`,
   })
 
 
@@ -194,14 +200,80 @@ app.get('/api/createchatroom', function (req, res) {
 /* ********************************************Createroom API END ***********************************/
 
 
-app.get("/", (req, res) => {
-  console.log("api running");
-  res.send({
-    message: "sucess",
-  })
+
+
+
+
+
+/* ********************************************Add Admin API END ***********************************/
+app.post('api/addadmin', (req, res) => {
+  const params = req.body;
+  // var email = params.email;
+  // var chatroom = params.chatroom;
+  // var roomId;
+  // var userUid;
+  const db = getDatabase();
+  var roomId = "LoLp4Q";
+  const database = ref(db, 'ChatRoom/' + roomId + '/Admins');
+  onValue(database, (snapshot) => {
+    const data = snapshot.val();
+    res.send({
+      status: 202,
+      message: data,
+    })
+  });
+
+
+});
+
+
+
+/* ********************************************Add Admin API END ***********************************/
+
+// app.get('/api/getuid', (req, res) => {
+//  const auth = getAuth();
+//     onAuthStateChanged(auth, (user) => {
+//       if (user) {
+//         // User is signed in, see docs for a list of available properties
+//         // https://firebase.google.com/docs/reference/js/firebase.User
+//         const uid = user.uid;
+//         res.send({
+//           status: 202,
+//           message: uid,
+//         })
+//         // ...
+//       } else {
+//         // User is signed out
+//         // ...
+//         res.send({
+//           status: 404,
+//           message: "signout already",
+//         })
+//       }
+//   })
+
+// });
+
+
+
+/* ********************************************read API ***********************************/
+
+app.get('/api/read', (req, res) => {
+  const db = getDatabase();
+  var roomId = "LoLp4Q";
+  const database = ref(db, 'ChatRoom/' + roomId + '/Admins');
+  onValue(database, (snapshot) => {
+    const data = snapshot.val();
+    res.send({
+      status: 202,
+      message: data,
+    })
+  });
+
 })
 
 
+/* ********************************************read API END ***********************************/
 
 
 app.listen(5000, () => {
