@@ -8,7 +8,7 @@ const { initializeApp } = require("firebase/app");
 const { getAuth } = require("firebase/auth");
 const { createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut } = require('firebase/auth');
 const { onAuthStateChanged } = require('firebase/auth')
-const { getDatabase, ref, set, onValue } = require("firebase/database");
+const { getDatabase, ref, set, onValue,remove } = require("firebase/database");
 const firebaseConfig = require('./config');
 initializeApp(firebaseConfig);
 // import uuidv4 from 'uuid/dist/v4'
@@ -188,13 +188,13 @@ app.post('/api/createChatroom', function (req, res) {
   //               + currentdate.getMinutes() + ":" 
   //               + currentdate.getSeconds();
   const uids = ["Saab", "Volvo", "BMW"];
-  const userRef1 = ref(db, "ChatRoom/" + roomId );
+  const userRef1 = ref(db, "ChatRoom/" + roomId);
   set(userRef1, {
-    Admins:uids,
-    password:password,
-    roomName:roomName
+    Admins: uids,
+    password: password,
+    roomName: roomName
   });
-  const userRef2 = ref(db, "users/" + uid + "/ChatRoom/" + roomId );
+  const userRef2 = ref(db, "users/" + uid + "/ChatRoom/" + roomId);
   set(userRef2, {
     RoomName: roomName,
   });
@@ -224,15 +224,14 @@ app.post('/api/addadmin', (req, res) => {
   const db = getDatabase();
   const database = ref(db, 'ChatRoom/' + roomId + '/Admins');
   onValue(database, (snapshot) => {
-    const data = snapshot.val();
-    for (var i = 0; i < arr.length; i++) {
-      if (arr[i] === "splice") {
-          var spliced = arr.splice(i, 1);
-          document.write("Removed element: " + spliced + "<br>");
-          document.write("Remaining elements: " + arr);
-      }
-  }
+    var data = snapshot.val();
+    console.log(data);
     data.push(uid);
+    const adminDatabase = ref(db, 'ChatRoom/' + roomId );
+    set(adminDatabase, {
+      Admins: data
+    });
+
     res.send({
       status: 202,
       message: data,
@@ -250,22 +249,49 @@ app.post('/api/addadmin', (req, res) => {
 
 /* ********************************************Remove Admin API END ***********************************/
 app.delete('/api/removeadmin', (req, res) => {
+  console.log(`1`);
   const params = req.body;
   var roomId = params.roomId;
   var uid = params.uid;
+  var adminUid = params.adminUid;
+  console.log(`${roomId} ${uid} ${adminUid}`);
   const db = getDatabase();
   const database = ref(db, 'ChatRoom/' + roomId + '/Admins');
   onValue(database, (snapshot) => {
     const data = snapshot.val();
+    var flag = false;
     for (var i = 0; i < data.length; i++) {
-      if (data[i] === uid) {
-          data.splice(i, 1);
+      if (data[i] === adminUid) {
+        flag = true;
       }
-  }
-    res.send({
-      status: 202,
-      message: data,
-    })
+    }
+
+    console.log(`data = ${data}`);
+    console.log(`flag = ${flag}`);
+    if(flag){
+      for (var i = 0; i < data.length; i++) {
+        if (data[i] === uid) {
+          data.splice(i, 1);
+        }
+      }
+      const adminDatabase = ref(db, 'ChatRoom/' + roomId );
+      set(adminDatabase, {
+        Admins: data
+      });
+  
+      res.send({
+        status: 202,
+        message: `admin removed`,
+      })
+    }
+    else{
+      res.send({
+        status: 404,
+        message: `you are not an admin`,
+      })
+    }
+   
+
   });
 
 
@@ -305,7 +331,7 @@ app.delete('/api/removeadmin', (req, res) => {
 
 app.get('/api/read', (req, res) => {
   const db = getDatabase();
-  var roomId = "Ic8AZj";
+  var roomId = "Aj6IeS";
   const database = ref(db, 'ChatRoom/' + roomId + '/Admins');
   onValue(database, (snapshot) => {
     const data = snapshot.val();
