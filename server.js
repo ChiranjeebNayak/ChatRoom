@@ -8,7 +8,7 @@ const { initializeApp } = require("firebase/app");
 const { getAuth } = require("firebase/auth");
 const { createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut } = require('firebase/auth');
 const { onAuthStateChanged } = require('firebase/auth')
-const { getDatabase, ref, set, onValue, remove } = require("firebase/database");
+const { getDatabase, ref, set, onValue, remove, get, child } = require("firebase/database");
 const firebaseConfig = require('./config');
 initializeApp(firebaseConfig);
 // import uuidv4 from 'uuid/dist/v4'
@@ -107,16 +107,10 @@ app.post('/api/signin', function (req, res) {
           message: `signin done`,
           email:data.email,
           name:data.name,
-          phone:data.phone
+          phone:data.phone,
+          uid:uid
         })
       })
-      // res.send({
-      //   status: 202,
-      //   message: `signin done`,
-      //   email:data.email,
-      //   name:data.name,
-      //   phone:data.phone
-      // })
     })
     .catch((error) => {
       const errorCode = error.code;
@@ -220,10 +214,11 @@ app.post('/api/createChatroom', function (req, res) {
   set(userRef2, {
     RoomName: roomName,
   });
-  console.log(`Chartroom link = https://chat-application-841a0.web.app/#/chat/room/${roomId}`);
+  console.log(`Chatroom link = https://chat-application-841a0.web.app/#/chat/room/${roomId}`);
+  var chatRoomLink = `https://chat-application-841a0.web.app/#/chat/room/${roomId}`
   res.send({
     status: 202,
-    message: `https://chat-application-841a0.web.app/#/chat/room/${roomId}`,
+    message: chatRoomLink,
   })
 
 
@@ -323,29 +318,49 @@ app.delete('/api/removeadmin', (req, res) => {
 
 /* ********************************************Remove Admin API END ***********************************/
 
-// app.get('/api/getuid', (req, res) => {
-//  const auth = getAuth();
-//     onAuthStateChanged(auth, (user) => {
-//       if (user) {
-//         // User is signed in, see docs for a list of available properties
-//         // https://firebase.google.com/docs/reference/js/firebase.User
-//         const uid = user.uid;
-//         res.send({
-//           status: 202,
-//           message: uid,
-//         })
-//         // ...
-//       } else {
-//         // User is signed out
-//         // ...
-//         res.send({
-//           status: 404,
-//           message: "signout already",
-//         })
-//       }
-//   })
 
-// });
+
+/* ********************************************Schedule API END ***********************************/
+
+app.post(`/api/search`,(req,res) => {
+  const params = req.body;
+  var email = params.email;
+  var name = params.name;
+  var phone = params.phone;
+  const dbRef = ref(getDatabase());
+  get(child(dbRef, `users/`)).then((snapshot) => {
+    if (snapshot.exists()) {
+     // console.log(snapshot.val());
+      var data = snapshot.val();
+      var results=[];
+      for(var key of Object.keys(data)){
+            //console.log(data[key].email);
+            console.log(data[key].phone);
+            if(data[key].email===email || data[key].name===name || data[key].phone==phone)
+              results.push(data[key]);
+            }
+            // console.log(results);
+            res.send({
+              status:202,
+              message:results
+            })
+    } else {
+      console.log("No data available");
+      res.send({
+        status:404,
+        message:`user not found`
+      })
+    }
+  }).catch((error) => {
+    res.send({
+      status:404,
+      message:error
+    })
+  });
+})
+
+
+/* ********************************************Schedule API END ***********************************/
 
 
 
