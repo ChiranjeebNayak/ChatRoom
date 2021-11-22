@@ -8,7 +8,7 @@ const { initializeApp } = require("firebase/app");
 const { getAuth } = require("firebase/auth");
 const { createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut } = require('firebase/auth');
 const { onAuthStateChanged } = require('firebase/auth')
-const { getDatabase, ref, set, onValue,remove } = require("firebase/database");
+const { getDatabase, ref, set, onValue, remove } = require("firebase/database");
 const firebaseConfig = require('./config');
 initializeApp(firebaseConfig);
 // import uuidv4 from 'uuid/dist/v4'
@@ -20,8 +20,8 @@ app.post('/api/signup', function (req, res) {
 
   const params = req.body;
   var email = params.email;
-  var password = params.password;
   var name = params.name;
+  var password = params.password;
   var phone = params.phone;
 
   // console.log(`${email} ${password} ${name} ${phone}`);
@@ -31,8 +31,17 @@ app.post('/api/signup', function (req, res) {
     .then((userCredential) => {
       // Signed in
       const user = userCredential.user;
+      const uid = user.uid;
       console.log(user.uid);
+      const db = getDatabase();
 
+
+      const userRef = ref(db, "users/" + uid);
+      set(userRef, {
+        name: name,
+        email: email,
+        phone: phone
+      })
       res.send({
         status: 200,
         message: `signup done`,
@@ -85,16 +94,29 @@ app.post('/api/signin', function (req, res) {
 
   signInWithEmailAndPassword(auth, email, password)
     .then((userCredential) => {
-      // Signed in
-      // const user = userCredential.user;
-      // console.log(userCredential.user);
-      // console.log(userCredential.user.uid);
-      // localStorage.setItem('uid', user.uid);
-      // ...
-      res.send({
-        status: 202,
-        message: `signin done`,
+      const user = userCredential.user;
+      const uid = user.uid;
+      console.log(uid);
+      const db = getDatabase();
+      const userRef = ref(db, "users/" + uid);
+      onValue(userRef, (snapshot) => {
+        const data = snapshot.val();
+        console.log(data);
+        res.send({
+          status: 202,
+          message: `signin done`,
+          email:data.email,
+          name:data.name,
+          phone:data.phone
+        })
       })
+      // res.send({
+      //   status: 202,
+      //   message: `signin done`,
+      //   email:data.email,
+      //   name:data.name,
+      //   phone:data.phone
+      // })
     })
     .catch((error) => {
       const errorCode = error.code;
@@ -227,7 +249,7 @@ app.post('/api/addadmin', (req, res) => {
     var data = snapshot.val();
     console.log(data);
     data.push(uid);
-    const adminDatabase = ref(db, 'ChatRoom/' + roomId );
+    const adminDatabase = ref(db, 'ChatRoom/' + roomId);
     set(adminDatabase, {
       Admins: data
     });
@@ -268,29 +290,29 @@ app.delete('/api/removeadmin', (req, res) => {
 
     console.log(`data = ${data}`);
     console.log(`flag = ${flag}`);
-    if(flag){
+    if (flag) {
       for (var i = 0; i < data.length; i++) {
         if (data[i] === uid) {
           data.splice(i, 1);
         }
       }
-      const adminDatabase = ref(db, 'ChatRoom/' + roomId );
+      const adminDatabase = ref(db, 'ChatRoom/' + roomId);
       set(adminDatabase, {
         Admins: data
       });
-  
+
       res.send({
         status: 202,
         message: `admin removed`,
       })
     }
-    else{
+    else {
       res.send({
         status: 404,
         message: `you are not an admin`,
       })
     }
-   
+
 
   });
 
