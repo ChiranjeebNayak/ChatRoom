@@ -9,11 +9,13 @@ const { getAuth } = require("firebase/auth");
 const { createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut } = require('firebase/auth');
 const { onAuthStateChanged } = require('firebase/auth')
 const { getDatabase, ref, set, onValue, remove, get, child } = require("firebase/database");
+const { getFirestore, collection } = require('firebase/firestore')
 const firebaseConfig = require('./config');
 initializeApp(firebaseConfig);
 // import uuidv4 from 'uuid/dist/v4'
 const { v4: uuidv4 } = require('uuid');
 var randomstring = require("randomstring");
+const { apiKey } = require('./config');
 /* ********************************************Signup API ***********************************/
 
 app.post('/api/signup', function (req, res) {
@@ -105,10 +107,10 @@ app.post('/api/signin', function (req, res) {
         res.send({
           status: 202,
           message: `signin done`,
-          email:data.email,
-          name:data.name,
-          phone:data.phone,
-          uid:uid
+          email: data.email,
+          name: data.name,
+          phone: data.phone,
+          uid: uid
         })
       })
     })
@@ -320,9 +322,9 @@ app.delete('/api/removeadmin', (req, res) => {
 
 
 
-/* ********************************************Schedule API END ***********************************/
+/* ********************************************Search API END ***********************************/
 
-app.post(`/api/search`,(req,res) => {
+app.post(`/api/search`, (req, res) => {
   const params = req.body;
   var email = params.email;
   var name = params.name;
@@ -330,41 +332,121 @@ app.post(`/api/search`,(req,res) => {
   const dbRef = ref(getDatabase());
   get(child(dbRef, `users/`)).then((snapshot) => {
     if (snapshot.exists()) {
-     // console.log(snapshot.val());
+      // console.log(snapshot.val());
       var data = snapshot.val();
-      var results=[];
-      for(var key of Object.keys(data)){
-            //console.log(data[key].email);
-            console.log(data[key].phone);
-            if(data[key].email===email || data[key].name===name || data[key].phone==phone)
-              results.push(data[key]);
-            }
-            // console.log(results);
-            res.send({
-              status:202,
-              message:results
-            })
+      var results = [];
+      for (var key of Object.keys(data)) {
+        //console.log(data[key].email);
+        console.log(data[key].phone);
+        if (data[key].email === email || data[key].name === name || data[key].phone == phone)
+          results.push(data[key]);
+      }
+      // console.log(results);
+      res.send({
+        status: 202,
+        message: results
+      })
     } else {
       console.log("No data available");
       res.send({
-        status:404,
-        message:`user not found`
+        status: 404,
+        message: `user not found`
       })
     }
   }).catch((error) => {
     res.send({
-      status:404,
-      message:error
+      status: 404,
+      message: error
     })
   });
 })
+
+
+/* ********************************************Search API END***********************************/
+
+
+
+
+
+/* ********************************************Schedule API ***********************************/
+app.post('/api/schedule', (req, res) => {
+  var params = req.body;
+  var msg = params.msg;
+  var email = params.email;
+
+})
+
 
 
 /* ********************************************Schedule API END ***********************************/
 
 
 
-/* ********************************************read API ***********************************/
+const geofire = require('geofire-common');
+
+/* ********************************************geoquery API END ***********************************/
+
+
+/* ********************************************geostrore API ***********************************/
+app.post('/api/geostrore', (req, res) => {
+  var params = req.body;
+  const lat = 51.5074;
+  const lng = 0.1278;
+  const hash = geofire.geohashForLocation([lat, lng]);
+  const db = getFirestore();
+  // Add the hash and the lat/lng to the document. We will use the hash
+  // for queries and the lat/lng for distance comparisons.
+  const londonRef = db.collection('cities').doc('LON');
+  londonRef.update({
+    geohash: hash,
+    lat: lat,
+    lng: lng
+  }).then(() => {
+    // ...
+    res.send({
+      status: 202,
+      message: 'geo location strored'
+    })
+  });
+})
+
+
+
+/* ********************************************geostore API END ***********************************/
+
+/* ********************************************geoquery API ***********************************/
+app.post('/api/geoquery', (req, res) => {
+  var params = req.body;
+  
+  const lat = 51.5074;
+  const lng = 0.1278;
+  const hash = geofire.geohashForLocation([lat, lng]);
+  // Add the hash and the lat/lng to the document. We will use the hash
+  // for queries and the lat/lng for distance comparisons.
+  const db = getFirestore();
+  const londonRef = db.collection('cities').doc('LON');
+  londonRef.update({
+    geohash: hash,
+    lat: lat,
+    lng: lng
+  }).then(() => {
+    // ...
+    res.send({
+      status: 202,
+      message: 'geo location strored'
+    })
+  });
+
+})
+
+
+
+
+
+
+
+
+/* ********************************************read API***********************************/
 
 app.get('/api/read', (req, res) => {
   const db = getDatabase();
