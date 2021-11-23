@@ -101,8 +101,8 @@ app.post('/api/signin', function (req, res) {
       onValue(userRef, (snapshot) => {
         const data = snapshot.val();
         console.log(data);
-        res.send({
-          status: 202,
+        res.status(202).send({
+          // status: 202,
           message: `SignIn done`,
           email: data.email,
           name: data.name,
@@ -119,20 +119,20 @@ app.post('/api/signin', function (req, res) {
         alert("email already exists");
       else if (errorCode === "auth/invalid-email") {
 
-        res.send({
-          status: 404,
+        res.status(400).send({
+          // status: 404,
           message: `Invalid Email`,
         })
       }
       else if (errorCode === "auth/wrong-password") {
-        res.send({
-          status: 404,
+        res.status(400).send({
+          // status: 404,
           message: `Wrong Password`,
         })
       }
       else {
-        res.send({
-          status: 404,
+        res.status(404).send({
+          // status: 404,
           message: errorMessage,
         })
       }
@@ -177,16 +177,15 @@ app.post('/api/forgotPassword' ,(req,res) =>{
       .then(() => {
        // alert(`password sent to your mail id`)
         // Password reset email sent!
-        res.send({
-          status:202,
-          message:' Password reset email sent!'
+        res.status(202).send({
+          // status:202,
+          message:'Password reset email sent!'
         })
       })
       .catch((error) => {
         const errorCode = error.code;
         const errorMessage = error.message;
-        res.send({
-          status:404,
+        res.status(404).send({
           message:`${errorCode} : ${errorMessage}`
         })
         // ..
