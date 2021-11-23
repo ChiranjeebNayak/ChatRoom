@@ -12,7 +12,6 @@ const { getDatabase, ref, set, onValue, remove, get, child } = require("firebase
 const { getFirestore } = require('firebase/firestore')
 const firebaseConfig = require('./config');
 initializeApp(firebaseConfig);
-// import uuidv4 from 'uuid/dist/v4'
 const { v4: uuidv4 } = require('uuid');
 var randomstring = require("randomstring");
 const { apiKey } = require('./config');
@@ -25,8 +24,6 @@ app.post('/api/signup', function (req, res) {
   var name = params.name;
   var password = params.password;
   var phone = params.phone;
-
-  // console.log(`${email} ${password} ${name} ${phone}`);
 
   const auth = getAuth();
   createUserWithEmailAndPassword(auth, email, password)
@@ -106,7 +103,7 @@ app.post('/api/signin', function (req, res) {
         console.log(data);
         res.send({
           status: 202,
-          message: `signin done`,
+          message: `SignIn done`,
           email: data.email,
           name: data.name,
           phone: data.phone,
@@ -216,7 +213,7 @@ app.post('/api/createChatroom', function (req, res) {
   set(userRef2, {
     RoomName: roomName,
   });
-  console.log(`Chatroom link = https://chat-application-841a0.web.app/#/chat/room/${roomId}`);
+  // console.log(`Chatroom link = https://chat-application-841a0.web.app/#/chat/room/${roomId}`);
   var chatRoomLink = `https://chat-application-841a0.web.app/#/chat/room/${roomId}`
   res.send({
     status: 202,
@@ -235,11 +232,11 @@ app.post('/api/createChatroom', function (req, res) {
 
 
 /* ********************************************Add Admin API END ***********************************/
-app.post('/api/addadmin', (req, res) => {
+app.post('/api/addAdmin', (req, res) => {
   const params = req.body;
   var roomId = params.roomId;
   var uid = params.uid;
-  var userUid;
+  // var userUid;
   const db = getDatabase();
   const database = ref(db, 'ChatRoom/' + roomId + '/Admins');
   onValue(database, (snapshot) => {
@@ -267,7 +264,7 @@ app.post('/api/addadmin', (req, res) => {
 
 
 /* ********************************************Remove Admin API END ***********************************/
-app.delete('/api/removeadmin', (req, res) => {
+app.delete('/api/removeAdmin', (req, res) => {
   console.log(`1`);
   const params = req.body;
   var roomId = params.roomId;
@@ -279,7 +276,7 @@ app.delete('/api/removeadmin', (req, res) => {
   onValue(database, (snapshot) => {
     const data = snapshot.val();
     var flag = false;
-    for (var i = 0; i < data.length; i++) {
+    for (let i = 0; i < data.length; i++) {
       if (data[i] === adminUid) {
         flag = true;
       }
@@ -288,7 +285,7 @@ app.delete('/api/removeadmin', (req, res) => {
     console.log(`data = ${data}`);
     console.log(`flag = ${flag}`);
     if (flag) {
-      for (var i = 0; i < data.length; i++) {
+      for (let i = 0; i < data.length; i++) {
         if (data[i] === uid) {
           data.splice(i, 1);
         }
@@ -332,16 +329,13 @@ app.post(`/api/search`, (req, res) => {
   const dbRef = ref(getDatabase());
   get(child(dbRef, `users/`)).then((snapshot) => {
     if (snapshot.exists()) {
-      // console.log(snapshot.val());
       var data = snapshot.val();
       var results = [];
       for (var key of Object.keys(data)) {
-        //console.log(data[key].email);
         console.log(data[key].phone);
         if (data[key].email === email || data[key].name === name || data[key].phone == phone)
           results.push(data[key]);
       }
-      // console.log(results);
       res.send({
         status: 202,
         message: results
@@ -373,6 +367,8 @@ app.post('/api/schedule', (req, res) => {
   var params = req.body;
   var msg = params.msg;
   var email = params.email;
+  var date = params.date;
+  var time = params.time;
 
 })
 
@@ -388,7 +384,7 @@ const geofire = require('geofire-common');
 
 
 /* ********************************************geostrore API ***********************************/
-app.post('/api/geostrore', (req, res) => {
+app.post('/api/geostore', (req, res) => {
   var params = req.body;
   const lat = 51.5074;
   const lng = 0.1278;
@@ -405,7 +401,7 @@ app.post('/api/geostrore', (req, res) => {
     // ...
     res.send({
       status: 202,
-      message: 'geo location strored'
+      message: 'geo location stored'
     })
   });
 })
@@ -417,7 +413,7 @@ app.post('/api/geostrore', (req, res) => {
 /* ********************************************geoquery API ***********************************/
 app.post('/api/geoquery', (req, res) => {
   var params = req.body;
-  
+
   const lat = 51.5074;
   const lng = 0.1278;
   const hash = geofire.geohashForLocation([lat, lng]);
@@ -433,7 +429,7 @@ app.post('/api/geoquery', (req, res) => {
     // ...
     res.send({
       status: 202,
-      message: 'geo location strored'
+      message: 'geo location stored'
     })
   });
 
