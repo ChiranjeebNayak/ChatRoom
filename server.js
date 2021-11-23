@@ -201,6 +201,46 @@ app.post('/api/forgotPassword' ,(req,res) =>{
 
 
 
+
+
+/* ********************************************Get User Detais API***********************************/
+
+app.get('/api/getuserdetails',(req,res) =>{
+  const params = req.body;
+  const uid = params.uid;
+  const dbRef = ref(getDatabase());
+  get(child(dbRef, `users/${uid}`)).then((snapshot) => {
+    if (snapshot.exists()) {
+      var data = snapshot.val();
+      res.send({
+        status: 202,
+        message: data
+      })
+    } else {
+      console.log("No data available");
+      res.send({
+        status: 404,
+        message: `user not found`
+      })
+    }
+  }).catch((error) => {
+    res.send({
+      status: 404,
+      message: error
+    })
+  });
+})
+
+
+
+
+
+/* ********************************************Get User Details API END***********************************/
+
+
+
+
+
 // /* ********************************************CreateRoom API ***********************************/
 
 app.post('/api/createChatroom', function (req, res) {
@@ -256,6 +296,40 @@ app.post('/api/createChatroom', function (req, res) {
 
 
 
+/* ********************************************Get chatRoom Detais API***********************************/
+
+app.get('/api/chatroomdetails',(req,res) =>{
+  const params = req.body;
+  const roomId = params.roomId;
+  const dbRef = ref(getDatabase());
+  get(child(dbRef, `ChatRoom/${roomId}`)).then((snapshot) => {
+    if (snapshot.exists()) {
+      var data = snapshot.val();
+      res.send({
+        status: 202,
+        details: data
+      })
+    } else {
+      console.log("No data available");
+      res.send({
+        status: 404,
+        message: `chatRoom not found`
+      })
+    }
+  }).catch((error) => {
+    res.send({
+      status: 404,
+      message: error
+    })
+  });
+})
+
+
+
+
+
+/* ********************************************Get chatRoom Details API END***********************************/
+
 
 
 
@@ -292,7 +366,7 @@ app.post('/api/addAdmin', (req, res) => {
 
 
 
-/* ********************************************Remove Admin API END ***********************************/
+/* ********************************************Remove Admin API***********************************/
 app.delete('/api/removeAdmin', (req, res) => {
   console.log(`1`);
   const params = req.body;
@@ -346,6 +420,88 @@ app.delete('/api/removeAdmin', (req, res) => {
 
 /* ********************************************Remove Admin API END ***********************************/
 
+/* ********************************************Add User API**********************************/
+
+app.post('/api/adduser',(req,res) =>{
+  const params = req.body;
+  const roomId = params.roomId;
+  const uid = params.uid;
+  const db = ref(getDatabase());
+
+  get(child(db, `ChatRoom/${roomId}/users`)).then((snapshot) => {
+    var data = snapshot.val();
+    data.push(uid);
+    const userRef = ref(getDatabase(),`ChatRoom/${roomId}/`)
+    set(userRef,{
+      users:data
+    })
+
+    res.send({
+      status:202,
+      message:'add user'
+    })
+
+
+  })
+  
+})
+
+
+
+/* ********************************************Add User API END**********************************/
+
+
+
+
+/* ********************************************Remove User API**********************************/
+app.delete('/api/removeuser', (req, res) => {
+  const params = req.body;
+
+  var roomId = params.roomId;
+  var uid = params.uid;
+  //var adminUid = params.adminUid;
+
+
+  const db = ref(getDatabase());
+
+  get(child(db, `ChatRoom/${roomId}/users`)).then((snapshot) => {
+    var data = snapshot.val();
+      for(var i=0;i<data.length;i++){
+        if(data[i]===uid){
+          data.splice(i,1);
+        }
+      }
+    const userRef = ref(getDatabase(),`ChatRoom/${roomId}/`)
+    set(userRef,{
+      users:data
+    })
+
+    res.send({
+      status:202,
+      message:'remove user'
+    })
+
+    
+  }).catch((error) =>{
+    res.send({
+      status:404,
+      message:error
+    })
+  })
+
+
+
+});
+
+
+
+/* ********************************************Remove User API END***********************************/
+
+
+
+
+
+
 
 
 /* ********************************************Search API END ***********************************/
@@ -387,7 +543,24 @@ app.post(`/api/search`, (req, res) => {
 
 /* ********************************************Search API END***********************************/
 
+/* ********************************************DeleteChatRooom API ***********************************/
+app.delete(`/api/deletechatroom`, (req,res) => {
+  const params = req.body;
+  const roomId = params.roomid;
+  const db = getDatabase();
+  const databaseRef = ref(db, 'ChatRoom/' + roomId);
+  //delete chatroom
+  remove(databaseRef)
+  res.send({
+    status:202,
+    message:'chatroom deleted'
+  })
+})
 
+
+
+
+/* ********************************************DeleteChatRooom API END***********************************/
 
 
 
@@ -408,6 +581,7 @@ app.post('/api/schedule', (req, res) => {
 
 
 const geofire = require('geofire-common');
+const { database } = require('firebase-admin');
 
 /* ********************************************geoquery API END ***********************************/
 
@@ -467,18 +641,7 @@ app.post('/api/geoquery', (req, res) => {
 /* ********************************************geoquery API END***********************************/
 
 
-/* ********************************************chatdetails API ***********************************/
-app.post(`/api/chatdetails`, (req,res) => {
-  res.send({
-    status:202,
-    message:'chat details'
-  })
-})
 
-
-
-
-/* ********************************************chatdetails API END***********************************/
 
 
 
