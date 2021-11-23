@@ -351,9 +351,7 @@ app.delete('/api/removeAdmin', (req, res) => {
 
 app.post(`/api/search`, (req, res) => {
   const params = req.body;
-  var email = params.email;
-  var name = params.name;
-  var phone = params.phone;
+  var text = params.text;
   const dbRef = ref(getDatabase());
   get(child(dbRef, `users/`)).then((snapshot) => {
     if (snapshot.exists()) {
@@ -361,7 +359,7 @@ app.post(`/api/search`, (req, res) => {
       var results = [];
       for (var key of Object.keys(data)) {
         console.log(data[key].phone);
-        if (data[key].email === email || data[key].name === name || data[key].phone == phone)
+        if (data[key].email === text || data[key].name === text || data[key].phone == text)
           results.push(data[key]);
       }
       res.send({
