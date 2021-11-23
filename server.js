@@ -6,7 +6,7 @@ app.use(express.json());
 app.use(cors());
 const { initializeApp } = require("firebase/app");
 const { getAuth } = require("firebase/auth");
-const { createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut } = require('firebase/auth');
+const { createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut ,sendPasswordResetEmail } = require('firebase/auth');
 const { onAuthStateChanged } = require('firebase/auth')
 const { getDatabase, ref, set, onValue, remove, get, child } = require("firebase/database");
 const { getFirestore } = require('firebase/firestore')
@@ -168,7 +168,36 @@ app.get('/api/signout', function (req, res) {
 
 // /* ********************************************Signout API END ***********************************/
 
+/* ********************************************ForgotPasssword API ***********************************/
+app.post('/api/orgotpassword' ,(req,res) =>{
+  const auth = getAuth();
+  var params = req.body;
+  var email = params.email;
+    sendPasswordResetEmail(auth, email)
+      .then(() => {
+        alert(`password sent to your mail id`)
+        // Password reset email sent!
+        res.send({
+          status:202,
+          message:' Password reset email sent!'
+        })
+      })
+      .catch((error) => {
+        const errorCode = error.code;
+        const errorMessage = error.message;
+        res.send({
+          status:202,
+          message:`${errorCode} : ${errorMessage}`
+        })
+        // ..
+      });
+})
 
+
+
+
+
+/* ********************************************ForgotPasssword API END***********************************/
 
 
 
@@ -435,8 +464,21 @@ app.post('/api/geoquery', (req, res) => {
 
 })
 
+/* ********************************************geoquery API END***********************************/
 
 
+/* ********************************************chatdetails API ***********************************/
+app.post(`/api/chatdetails`, (req,res) => {
+  res.send({
+    status:202,
+    message:'chat details'
+  })
+})
+
+
+
+
+/* ********************************************chatdetails API END***********************************/
 
 
 
