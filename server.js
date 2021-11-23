@@ -9,7 +9,7 @@ const { getAuth } = require("firebase/auth");
 const { createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut } = require('firebase/auth');
 const { onAuthStateChanged } = require('firebase/auth')
 const { getDatabase, ref, set, onValue, remove, get, child } = require("firebase/database");
-const { getFirestore, collection } = require('firebase/firestore')
+const { getFirestore } = require('firebase/firestore')
 const firebaseConfig = require('./config');
 initializeApp(firebaseConfig);
 // import uuidv4 from 'uuid/dist/v4'
@@ -425,7 +425,7 @@ app.post('/api/geoquery', (req, res) => {
   // for queries and the lat/lng for distance comparisons.
   const db = getFirestore();
   const londonRef = db.collection('cities').doc('LON');
-  londonRef.update({
+  londonRef.set({
     geohash: hash,
     lat: lat,
     lng: lng
