@@ -175,7 +175,7 @@ app.post('/api/orgotpassword' ,(req,res) =>{
   var email = params.email;
     sendPasswordResetEmail(auth, email)
       .then(() => {
-        alert(`password sent to your mail id`)
+       // alert(`password sent to your mail id`)
         // Password reset email sent!
         res.send({
           status:202,
@@ -186,7 +186,7 @@ app.post('/api/orgotpassword' ,(req,res) =>{
         const errorCode = error.code;
         const errorMessage = error.message;
         res.send({
-          status:202,
+          status:404,
           message:`${errorCode} : ${errorMessage}`
         })
         // ..
