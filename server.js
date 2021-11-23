@@ -169,7 +169,7 @@ app.get('/api/signout', function (req, res) {
 // /* ********************************************Signout API END ***********************************/
 
 /* ********************************************ForgotPasssword API ***********************************/
-app.post('/api/orgotpassword' ,(req,res) =>{
+app.post('/api/forgotPassword' ,(req,res) =>{
   const auth = getAuth();
   var params = req.body;
   var email = params.email;
