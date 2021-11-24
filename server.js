@@ -544,10 +544,12 @@ app.delete(`/api/deleteChatroom`, (req, res) => {
   const db = getDatabase();
   const databaseRef = ref(db, 'ChatRoom/' + roomId);
   //delete chatroom
-  remove(databaseRef)
-  res.status(200).send({
-    // status: 202,
-    message: 'Chatroom Deleted'
+  remove(databaseRef).then(()=>{
+
+    res.status(200).send({
+      // status: 202,
+      message: 'Chatroom Deleted'
+    })
   })
 })
 
