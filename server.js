@@ -24,7 +24,7 @@ app.post('/api/signup', function (req, res) {
   var name = params.name;
   var password = params.password;
   var phone = params.phone;
-  
+
   const auth = getAuth();
   createUserWithEmailAndPassword(auth, email, password)
     .then((userCredential) => {
@@ -204,7 +204,7 @@ app.post('/api/forgotPassword', (req, res) => {
 
 /* ********************************************Get User Detais API***********************************/
 
-app.get('/api/getUserDetails', (req, res) => {
+app.get('/api/getUser', (req, res) => {
   const params = req.body;
   const uid = params.uid;
   const dbRef = ref(getDatabase());
@@ -263,13 +263,6 @@ app.post('/api/createChatroom', function (req, res) {
     RoomName: roomName,
     Password: password,
   });
-  // var currentdate = new Date(); 
-  // var dateTime = currentdate.getDate() + "/"
-  //               + (currentdate.getMonth()+1)  + "/" 
-  //               + currentdate.getFullYear() + " @ "  
-  //               + currentdate.getHours() + ":"  
-  //               + currentdate.getMinutes() + ":" 
-  //               + currentdate.getSeconds();
   const uids = [uid];
   const userRef1 = ref(db, "ChatRoom/" + roomId);
   set(userRef1, {
@@ -281,6 +274,15 @@ app.post('/api/createChatroom', function (req, res) {
   set(userRef2, {
     RoomName: roomName,
   });
+
+
+  const userRef3 = ref(db,  "ChatRoom/" + roomId+"/users/" +uid);
+  set(userRef3, {
+    isAdmin: true
+  });
+
+
+
   // console.log(`Chatroom link = https://chat-application-841a0.web.app/#/chat/room/${roomId}`);
   // var chatRoomLink = `https://chat-application-841a0.web.app/#/chat/room/${roomId}`
   var chatRoomLink = `http://localhost:8080/#/chat/room/${roomId}`
@@ -425,31 +427,18 @@ app.post('/api/addUser', (req, res) => {
   const roomId = params.roomId;
   const uid = params.uid;
   const db = ref(getDatabase());
+  var data = [];
+  
+    const userRef = ref(getDatabase(), `ChatRoom/${roomId}/users/${uid}`);
+    set(userRef, {
+      isAdmin: false
+    });
 
-  get(child(db, `ChatRoom/${roomId}/users`)).then((snapshot) => {
-    var data = snapshot.val();
-    if (data) {
-
-      data.push(uid);
-      const userRef = ref(getDatabase(), `ChatRoom/${roomId}/`)
-      set(userRef, {
-        users: data
-      })
-
-      res.status(200).send({
-        // status: 202,
-        message: 'User added'
-      })
-    }
-    else {
-      res.status(404).send({
-        // status: 202,
-        message: 'Chatroom not found'
-      })
-    }
-
-
+  res.status(200).send({
+    // status: 202,
+    message: 'User added'
   })
+
 
 })
 
