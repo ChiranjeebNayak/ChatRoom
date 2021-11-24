@@ -283,12 +283,10 @@ app.post('/api/createChatroom', function (req, res) {
   });
   // console.log(`Chatroom link = https://chat-application-841a0.web.app/#/chat/room/${roomId}`);
   var chatRoomLink = `https://chat-application-841a0.web.app/#/chat/room/${roomId}`
-  res.send({
-    status: 202,
+  res.status(202).send({
+    // status: 202,
     message: chatRoomLink,
   })
-
-
 })
 
 /* ********************************************Createroom API END ***********************************/
