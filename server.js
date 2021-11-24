@@ -459,29 +459,17 @@ app.delete('/api/removeUser', (req, res) => {
 
 
   const db = ref(getDatabase());
-
-  get(child(db, `ChatRoom/${roomId}/users`)).then((snapshot) => {
-    var data = snapshot.val();
-    for (var i = 0; i < data.length; i++) {
-      if (data[i] === uid) {
-        data.splice(i, 1);
-      }
-    }
-    const userRef = ref(getDatabase(), `ChatRoom/${roomId}/`)
-    set(userRef, {
-      users: data
-    })
-
-    res.status(200).send({
+  const userRef = ref(getDatabase(), `ChatRoom/${roomId}/users/${uid}`)
+  remove(userRef).then(()=>{
+     res.status(200).send({
       // status: 202,
       message: 'User removed'
     })
-
-
-  }).catch((error) => {
-    res.status(400).send({
-      // status: 404,
-      message: error
+  })
+  .catch((error)=>{
+    res.status(500).send({
+      // status: 202,
+      message:error
     })
   })
 
@@ -550,7 +538,12 @@ app.delete(`/api/deleteChatroom`, (req, res) => {
       // status: 202,
       message: 'Chatroom Deleted'
     })
-  })
+  }).catch(error=>{
+    res.status(500).send({
+      // status: 202,
+      message: error
+    })
+  }) 
 })
 
 
