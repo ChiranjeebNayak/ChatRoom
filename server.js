@@ -518,8 +518,8 @@ app.post(`/api/search`, (req, res) => {
         if (data[key].email === text || data[key].name === text || data[key].phone == text)
           results.push(data[key]);
       }
-      res.send({
-        status: 202,
+      res.status(200).send({
+        // status: 202,
         message: results
       })
     } else {
