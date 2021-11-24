@@ -24,7 +24,7 @@ app.post('/api/signup', function (req, res) {
   var name = params.name;
   var password = params.password;
   var phone = params.phone;
-
+  
   const auth = getAuth();
   createUserWithEmailAndPassword(auth, email, password)
     .then((userCredential) => {
