@@ -211,7 +211,7 @@ app.get('/api/getUserDetails', (req, res) => {
   get(child(dbRef, `users/${uid}`)).then((snapshot) => {
     if (snapshot.exists()) {
       var data = snapshot.val();
-      res.status(202).send({
+      res.status(200).send({
         // status: 202,
         message: data
       })
@@ -270,7 +270,7 @@ app.post('/api/createChatroom', function (req, res) {
   //               + currentdate.getHours() + ":"  
   //               + currentdate.getMinutes() + ":" 
   //               + currentdate.getSeconds();
-  const uids = ["Saab", "Volvo", "BMW"];
+  const uids = [uid];
   const userRef1 = ref(db, "ChatRoom/" + roomId);
   set(userRef1, {
     Admins: uids,
@@ -282,10 +282,11 @@ app.post('/api/createChatroom', function (req, res) {
     RoomName: roomName,
   });
   // console.log(`Chatroom link = https://chat-application-841a0.web.app/#/chat/room/${roomId}`);
-  var chatRoomLink = `https://chat-application-841a0.web.app/#/chat/room/${roomId}`
+  // var chatRoomLink = `https://chat-application-841a0.web.app/#/chat/room/${roomId}`
+  var chatRoomLink = `http://localhost:8080/#/chat/room/${roomId}`
   res.status(202).send({
     // status: 202,
-    message: chatRoomLink,
+    link: chatRoomLink
   })
 })
 
@@ -295,14 +296,14 @@ app.post('/api/createChatroom', function (req, res) {
 
 /* ********************************************Get chatRoom Detais API***********************************/
 
-app.get('/api/chatroomDetails', (req, res) => {
+app.post('/api/chatroomDetails', (req, res) => {
   const params = req.body;
   const roomId = params.roomId;
   const dbRef = ref(getDatabase());
   get(child(dbRef, `ChatRoom/${roomId}`)).then((snapshot) => {
     if (snapshot.exists()) {
       var data = snapshot.val();
-      res.status(202).send({
+      res.status(200).send({
         // status: 202,
         details: data
       })
@@ -314,7 +315,7 @@ app.get('/api/chatroomDetails', (req, res) => {
       })
     }
   }).catch((error) => {
-    res.status(404).send({
+    res.status(500).send({
       // status: 404,
       message: error
     })
@@ -427,16 +428,25 @@ app.post('/api/addUser', (req, res) => {
 
   get(child(db, `ChatRoom/${roomId}/users`)).then((snapshot) => {
     var data = snapshot.val();
-    data.push(uid);
-    const userRef = ref(getDatabase(), `ChatRoom/${roomId}/`)
-    set(userRef, {
-      users: data
-    })
+    if (data) {
 
-    res.status(200).send({
-      // status: 202,
-      message: 'User added'
-    })
+      data.push(uid);
+      const userRef = ref(getDatabase(), `ChatRoom/${roomId}/`)
+      set(userRef, {
+        users: data
+      })
+
+      res.status(200).send({
+        // status: 202,
+        message: 'User added'
+      })
+    }
+    else {
+      res.status(404).send({
+        // status: 202,
+        message: 'Chatroom not found'
+      })
+    }
 
 
   })
