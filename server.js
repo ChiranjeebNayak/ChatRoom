@@ -7,14 +7,12 @@ app.use(cors());
 const { initializeApp } = require("firebase/app");
 const { getAuth } = require("firebase/auth");
 const { createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, sendPasswordResetEmail } = require('firebase/auth');
-const { onAuthStateChanged } = require('firebase/auth')
 const { getDatabase, ref, set, onValue, remove, get, child } = require("firebase/database");
-const { getFirestore } = require('firebase/firestore')
 const firebaseConfig = require('./config');
 initializeApp(firebaseConfig);
-const { v4: uuidv4 } = require('uuid');
 var randomstring = require("randomstring");
-const { apiKey } = require('./config');
+const geolib = require('geolib');
+
 /* ********************************************Signup API ***********************************/
 
 app.post('/api/signup', function (req, res) {
@@ -31,7 +29,6 @@ app.post('/api/signup', function (req, res) {
       // Signed in
       const user = userCredential.user;
       const uid = user.uid;
-      console.log(user.uid);
       const db = getDatabase();
 
 
@@ -44,7 +41,6 @@ app.post('/api/signup', function (req, res) {
       })
 
       res.status(202).send({
-        // status: 200,
         message: `signup done`,
       })
 
@@ -55,19 +51,16 @@ app.post('/api/signup', function (req, res) {
       const errorMessage = error.message;
       if (errorCode === "auth/email-already-in-use") {
         res.status(400).send({
-          // status: 404,
           message: `email already exists`,
         })
       }
       else if (errorCode === "auth/invalid-email") {
         res.status(400).send({
-          // status: 404,
           message: `Invalid Email`,
         })
       }
       else {
         res.status(400).send({
-          // status: 404,
           message: errorMessage,
         })
       }
@@ -91,20 +84,15 @@ app.post('/api/signin', function (req, res) {
   var email = params.email;
   var password = params.password;
 
-  // console.log(`${email} ${password}`);
-
   signInWithEmailAndPassword(auth, email, password)
     .then((userCredential) => {
       const user = userCredential.user;
       const uid = user.uid;
-      console.log(uid);
       const db = getDatabase();
       const userRef = ref(db, "users/" + uid);
       onValue(userRef, (snapshot) => {
         const data = snapshot.val();
-        console.log(data);
         res.status(202).send({
-          // status: 202,
           message: `SignIn done`,
           email: data.email,
           name: data.name,
@@ -116,25 +104,21 @@ app.post('/api/signin', function (req, res) {
     .catch((error) => {
       const errorCode = error.code;
       const errorMessage = error.message;
-      console.log(errorCode);
       if (errorCode === "auth/email-already-in-use")
         alert("email already exists");
       else if (errorCode === "auth/invalid-email") {
 
         res.status(400).send({
-          // status: 404,
           message: `Invalid Email`,
         })
       }
       else if (errorCode === "auth/wrong-password") {
         res.status(400).send({
-          // status: 404,
           message: `Wrong Password`,
         })
       }
       else {
         res.status(404).send({
-          // status: 404,
           message: errorMessage,
         })
       }
@@ -154,13 +138,11 @@ app.get('/api/signout', function (req, res) {
   signOut(auth).then(() => {
     // Sign-out successful.
     res.status(200).send({
-      // status: 200,
       message: `signout done`,
     })
   }).catch((error) => {
     // An error happened.
     res.status(404).send({
-      // status: 404,
       message: error,
     })
   });
@@ -177,17 +159,15 @@ app.post('/api/forgotPassword', (req, res) => {
   var email = params.email;
   sendPasswordResetEmail(auth, email)
     .then(() => {
-      // alert(`password sent to your mail id`)
       // Password reset email sent!
-      res.status(202).send({
-        // status:202,
+      res.status(200).send({
         message: 'Password reset email sent!'
       })
     })
     .catch((error) => {
       const errorCode = error.code;
       const errorMessage = error.message;
-      res.status(404).send({
+      res.status(500).send({
         message: `${errorCode} : ${errorMessage}`
       })
       // ..
@@ -195,16 +175,13 @@ app.post('/api/forgotPassword', (req, res) => {
 })
 
 
-
-
-
-/* ********************************************ForgotPasssword API END***********************************/
+/* ********************************************Forgot Password API END***********************************/
 
 
 
 
 
-/* ********************************************Get User Detais API***********************************/
+/* ********************************************Get User Details API***********************************/
 
 app.get('/api/getUser', (req, res) => {
   const params = req.body;
@@ -214,26 +191,19 @@ app.get('/api/getUser', (req, res) => {
     if (snapshot.exists()) {
       var data = snapshot.val();
       res.status(200).send({
-        // status: 202,
         message: data
       })
     } else {
-      console.log("No data available");
       res.status(404).send({
-        // status: 404,
         message: `user not found`
       })
     }
   }).catch((error) => {
     res.status(404).send({
-      // status: 404,
       message: error
     })
   });
 })
-
-
-
 
 
 /* ********************************************Get User Details API END***********************************/
@@ -242,12 +212,11 @@ app.get('/api/getUser', (req, res) => {
 
 
 
-// /* ********************************************CreateRoom API ***********************************/
+/* ********************************************CreateRoom API ***********************************/
 
 app.post('/api/createChatroom', function (req, res) {
 
   const params = req.body;
-  //const auth = getAuth();
   var roomId = randomstring.generate({
     length: 6,
     charset: 'alphanumeric'
@@ -256,7 +225,6 @@ app.post('/api/createChatroom', function (req, res) {
   var password = params.password;
   var uid = params.uid;
 
-  //console.log(`create room details = ${roomName} ${password} ${roomId} ${uid}`);
   const db = getDatabase();
 
   const userRef = ref(db, "ChatRoom/" + roomId);
@@ -283,13 +251,8 @@ app.post('/api/createChatroom', function (req, res) {
     isAdmin: true
   });
 
-
-
-  // console.log(`Chatroom link = https://chat-application-841a0.web.app/#/chat/room/${roomId}`);
-  // var chatRoomLink = `https://chat-application-841a0.web.app/#/chat/room/${roomId}`
   var chatRoomLink = `http://localhost:8080/#/chatroom/${roomId}`
   res.status(202).send({
-    // status: 202,
     link: chatRoomLink,
     roomId: roomId
   })
@@ -309,26 +272,19 @@ app.post('/api/chatroomDetails', (req, res) => {
     if (snapshot.exists()) {
       var data = snapshot.val();
       res.status(200).send({
-        // status: 202,
         details: data
       })
     } else {
-      console.log("No data available");
       res.status(404).send({
-        // status: 404,
         message: `chatRoom not found`
       })
     }
   }).catch((error) => {
     res.status(500).send({
-      // status: 404,
       message: error
     })
   });
 })
-
-
-
 
 
 /* ********************************************Get chatRoom Details API END***********************************/
@@ -342,27 +298,30 @@ app.post('/api/addAdmin', (req, res) => {
   const params = req.body;
   var roomId = params.roomId;
   var uid = params.uid;
-  // var userUid;
   const db = getDatabase();
   const database = ref(db, 'ChatRoom/' + roomId + '/Admins');
   onValue(database, (snapshot) => {
     var data = snapshot.val();
-    console.log(data);
     data.push(uid);
     const adminDatabase = ref(db, 'ChatRoom/' + roomId);
     set(adminDatabase, {
       Admins: data
-    });
-
-    res.send({
-      status: 202,
-      message: data,
     })
+      .then(() => {
+        res.status(202).send({
+          message: data,
+        })
+      })
+      .catch((err) => {
+        res.status(400).send({
+          message: err,
+        })
+      })
+
   });
 
 
 });
-
 
 
 /* ********************************************Add Admin API END ***********************************/
@@ -371,12 +330,10 @@ app.post('/api/addAdmin', (req, res) => {
 
 /* ********************************************Remove Admin API***********************************/
 app.delete('/api/removeAdmin', (req, res) => {
-  console.log(`1`);
   const params = req.body;
   var roomId = params.roomId;
   var uid = params.uid;
   var adminUid = params.adminUid;
-  console.log(`${roomId} ${uid} ${adminUid}`);
   const db = getDatabase();
   const database = ref(db, 'ChatRoom/' + roomId + '/Admins');
   onValue(database, (snapshot) => {
@@ -387,9 +344,6 @@ app.delete('/api/removeAdmin', (req, res) => {
         flag = true;
       }
     }
-
-    console.log(`data = ${data}`);
-    console.log(`flag = ${flag}`);
     if (flag) {
       for (let i = 0; i < data.length; i++) {
         if (data[i] === uid) {
@@ -399,29 +353,29 @@ app.delete('/api/removeAdmin', (req, res) => {
       const adminDatabase = ref(db, 'ChatRoom/' + roomId);
       set(adminDatabase, {
         Admins: data
-      });
-
-      res.status(200).send({
-        // status: 202,
-        message: `admin removed`,
       })
+        .then(() => {
+          res.status(200).send({
+            message: `admin removed`,
+          })
+        })
+        .catch((err) => {
+          res.status(400).send({
+            message: err,
+          })
+        });
     }
     else {
-      res.status(400).send({
-        // status: 404,
+      res.status(500).send({
         message: `you are not an admin`,
       })
     }
-
-
   });
-
-
 });
 
-
-
 /* ********************************************Remove Admin API END ***********************************/
+
+
 
 /* ********************************************Add User API**********************************/
 
@@ -436,12 +390,9 @@ app.post('/api/addUser', (req, res) => {
   const userRef = ref(getDatabase(), `ChatRoom/${roomId}/users/${uid}`);
   onValue(db, (snapshot) => {
     let chatroomData = snapshot.val();
-    // console.log(chatroomData,pass,roomId);
-    console.log(chatroomData);
     if (chatroomData.password === pass) {
       onValue(adminRef, (snapshot2) => {
         var data = snapshot2.val();
-        // console.log(data);
         if (data) {
           data.forEach(element => {
             if (element === uid) {
@@ -449,13 +400,10 @@ app.post('/api/addUser', (req, res) => {
                 isAdmin: true
               })
                 .then(() => {
-                  console.log('1');
                   res.status(200).send({
                     message: 'User added'
                   })
                 }).catch(err => {
-                  console.log('2');
-
                   res.status(400).send({
                     message: err,
                   })
@@ -466,15 +414,11 @@ app.post('/api/addUser', (req, res) => {
                 isAdmin: false
               })
                 .then(() => {
-                  console.log('3');
-
                   res.status(200).send({
                     message: 'User added'
                   })
                 })
                 .catch(err => {
-                  console.log('4');
-
                   res.status(400).send({
                     message: err
                   })
@@ -496,15 +440,7 @@ app.post('/api/addUser', (req, res) => {
       })
     }
   })
-
-
-
-
-
-
 })
-
-
 
 /* ********************************************Add User API END**********************************/
 
@@ -514,41 +450,24 @@ app.post('/api/addUser', (req, res) => {
 /* ********************************************Remove User API**********************************/
 app.delete('/api/removeUser', (req, res) => {
   const params = req.body;
-
   var roomId = params.roomId;
   var uid = params.uid;
-  //var adminUid = params.adminUid;
 
-
-  // const db = ref(getDatabase());
   const userRef = ref(getDatabase(), `ChatRoom/${roomId}/users/${uid}`)
   remove(userRef).then(() => {
 
-
-
     res.status(200).send({
-      // status: 202,
       message: 'User removed'
     })
   })
     .catch((error) => {
       res.status(500).send({
-        // status: 202,
         message: error
       })
     })
-
-
-
 });
 
-
-
 /* ********************************************Remove User API END***********************************/
-
-
-
-
 
 
 
@@ -564,24 +483,19 @@ app.post(`/api/search`, (req, res) => {
       var data = snapshot.val();
       var results = [];
       for (var key of Object.keys(data)) {
-        console.log(data[key].phone);
         if (data[key].email.toLowerCase() === text.toLowerCase() || data[key].name.toLowerCase() === text.toLowerCase() || data[key].phone.toLowerCase() == text.toLowerCase())
           results.push(data[key]);
       }
       res.status(200).send({
-        // status: 202,
         message: results
       })
     } else {
-      console.log("No data available");
       res.status(404).send({
-        // status: 404,
         message: `user not found`
       })
     }
   }).catch((error) => {
     res.status(400).send({
-      // status: 404,
       message: error
     })
   });
@@ -590,32 +504,26 @@ app.post(`/api/search`, (req, res) => {
 
 /* ********************************************Search API END***********************************/
 
-/* ********************************************DeleteChatRooom API ***********************************/
+/* ********************************************DeleteChatRoom API ***********************************/
 app.post(`/api/deleteChatroom`, (req, res) => {
   const params = req.body;
   const roomId = params.roomId;
-  console.log(roomId);
   const db = getDatabase();
   const databaseRef = ref(db, 'ChatRoom/' + roomId);
   //delete chatroom
   remove(databaseRef).then(() => {
-
     res.status(200).send({
-      // status: 202,
       message: 'Chatroom Deleted'
     })
-  }).catch(error => {
-    res.status(500).send({
-      // status: 202,
-      message: error
-    })
   })
+    .catch(error => {
+      res.status(500).send({
+        message: error
+      })
+    })
 })
 
-
-
-
-/* ********************************************DeleteChatRooom API END***********************************/
+/* ********************************************DeleteChatRoom API END***********************************/
 
 
 
@@ -629,19 +537,10 @@ app.post('/api/schedule', (req, res) => {
 
 })
 
-
-
 /* ********************************************Schedule API END ***********************************/
 
 
-
-const geofire = require('geofire-common');
-const { database } = require('firebase-admin');
-
-/* ********************************************geoquery API END ***********************************/
-
-
-/* ********************************************geostrore API ***********************************/
+/* ********************************************geostore API ***********************************/
 app.post('/api/geostore', (req, res) => {
   var params = req.body;
   const lat = params.lat;
@@ -652,15 +551,24 @@ app.post('/api/geostore', (req, res) => {
   set(userRef, {
     lat: lat,
     lng: lng
+  }).then(() => {
+    res.status(200).send({
+      message: 'location stored',
+      lat: lat,
+      lng: lng
+    })
   })
-  res.status(200).send({
-    message: 'location stored'
-  })
+    .catch(err => {
+      res.status(500).send({
+        message: err,
+      })
+    })
 })
 
-
 /* ********************************************geostore API END ***********************************/
-const geolib = require('geolib');
+
+
+
 /* ********************************************geoquery API ***********************************/
 app.post('/api/geoquery', (req, res) => {
   var params = req.body;
@@ -669,7 +577,7 @@ app.post('/api/geoquery', (req, res) => {
   const lng = params.lng;
   var coords = { latitude: lat, longitude: lng }
   var uid = params.uid;
-  var nearbyUsers=[];
+  var nearbyUsers = [];
   const dbRef = ref(getDatabase());
   get(child(dbRef, `location`)).then((snapshot) => {
     if (snapshot.exists()) {
@@ -683,61 +591,48 @@ app.post('/api/geoquery', (req, res) => {
           longitude: userLng,
         })
         distance = distance / 1000;
-        // console.log(key + "  " + distance);
-        if (distance <= 50 ) {
-          results.push(uid);
+        if (distance <= 50 && key !== uid) {
+          results.push(key);
         }
       }
-     // console.log(results);
 
-      
-      for(var i =0;i<results.length;i++){
-          
+      for (var i = 0; i < results.length; i++) {
         get(child(dbRef, `users/${results[i]}`)).then((snapshot) => {
           if (snapshot.exists()) {
             var details = snapshot.val();
             nearbyUsers.unshift(details);
-            console.log(nearbyUsers);
           } else {
-            console.log("No details available");
             res.status(404).send({
-              // status: 404,
               message: `user not found from results`
             })
           }
         }).catch((error) => {
-          res.status(404).send({
-            // status: 404,
+          res.status(500).send({
             message: error
           })
         });
       }
-      for(var i =0;i<1000000000;i++){
-
-      }
-      res.status(200).send({
-        // status: 404,
-        message: nearbyUsers
-      })
+      setTimeout(() => {
+        res.status(200).send({
+          message: nearbyUsers
+        })
+      }, 2000)
 
     } else {
-      console.log("No data available");
       res.status(404).send({
-        // status: 404,
         message: `users not found`
       })
     }
   }).catch((error) => {
-    res.status(400).send({
-      // status: 404,
+    res.status(500).send({
       message: error
     })
   });
-
-
 })
 
 /* ********************************************geoquery API END***********************************/
+
+
 
 /* ********************************************All Users API***********************************/
 
@@ -747,76 +642,26 @@ app.get('/api/allUsers', (req, res) => {
     if (snapshot.exists()) {
       var data = snapshot.val();
       res.status(200).send({
-        // status: 404,
         message: data
       })
     } else {
-      console.log("No data available");
       res.status(404).send({
-        // status: 404,
         message: `users not found`
       })
     }
   }).catch((error) => {
     res.status(400).send({
-      // status: 404,
       message: error
     })
   });
 
 })
 
-
-
-
 /* ********************************************All Users  API END***********************************/
 
 
 
-/* ********************************************Contacts API***********************************/
-
-app.post('/api/contacts', (req, res) => {
-  var params = req.body;
-  var uid = params.uid;
-  var contactUid = params.contactUid;
-  const db = getDatabase();
-  const userRef = ref(db, `users/${uid}/contacts/${contactUid}`);
-  set(ref, {
-    lastsync: "12:00"
-  });
-
-  res.status(200).send({
-    message: 'contact details created'
-  })
-})
-
-
-/* ********************************************Contacts API END***********************************/
-
-
-
-
-
-
-/* ********************************************read API***********************************/
-
-app.get('/api/read', (req, res) => {
-  const db = getDatabase();
-  var roomId = "Aj6IeS";
-  const database = ref(db, 'ChatRoom/' + roomId + '/Admins');
-  onValue(database, (snapshot) => {
-    const data = snapshot.val();
-    res.status(200).send({
-      // status: 202,
-      message: data,
-    })
-  });
-
-})
-
-
-/* ********************************************read API END ***********************************/
-
+/* ********************************************START SERVER ON PORT 5000***********************************/
 
 app.listen(5000, () => {
   console.log(`server is running on 5000`);
