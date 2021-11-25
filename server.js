@@ -41,6 +41,7 @@ app.post('/api/signup', function (req, res) {
         email: email,
         phone: phone
       })
+      
       res.send({
         status: 200,
         message: `signup done`,
@@ -642,15 +643,13 @@ const { database } = require('firebase-admin');
 /* ********************************************geostrore API ***********************************/
 app.post('/api/geostore', (req, res) => {
   var params = req.body;
-  const lat = 51.5074;
-  const lng = 0.1278;
-  const hash = geofire.geohashForLocation([lat, lng]);
+  const lat = params.lat;
+  const lng = params.lng;
   const db = getFirestore();
   // Add the hash and the lat/lng to the document. We will use the hash
   // for queries and the lat/lng for distance comparisons.
   const londonRef = db.collection('cities').doc('LON');
   londonRef.update({
-    geohash: hash,
     lat: lat,
     lng: lng
   }).then(() => {
@@ -693,12 +692,41 @@ app.post('/api/geoquery', (req, res) => {
 
 /* ********************************************geoquery API END***********************************/
 
+/* ********************************************All Users API***********************************/
+
+app.get('/api/allusers' , (req,res) =>{
+  const dbRef = ref(getDatabase());
+  get(child(dbRef, `users/`)).then((snapshot) => {
+    if (snapshot.exists()) {
+      var data = snapshot.val();
+      res.status(202).send({
+        // status: 404,
+        message: data
+      })
+    } else {
+      console.log("No data available");
+      res.status(404).send({
+        // status: 404,
+        message: `users not found`
+      })
+    }
+  }).catch((error) => {
+    res.status(400).send({
+      // status: 404,
+      message: error
+    })
+  });
+
+})
+
+
+
+
+/* ********************************************All Users  API END***********************************/
+
+
+
 /* ********************************************Contacts API***********************************/
-
-
-
-
-/* ********************************************Contacts API END***********************************/
 
 app.post('/api/contacts',(req,res) =>{
   var params = req.body;
@@ -714,6 +742,11 @@ app.post('/api/contacts',(req,res) =>{
     message:'contact details created'
   })
 })
+
+
+/* ********************************************Contacts API END***********************************/
+
+
 
 
 
