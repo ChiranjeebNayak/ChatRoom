@@ -39,11 +39,12 @@ app.post('/api/signup', function (req, res) {
       set(userRef, {
         name: name,
         email: email,
-        phone: phone
+        phone: phone,
+        uid: uid
       })
-      
-      res.send({
-        status: 200,
+
+      res.status(202).send({
+        // status: 200,
         message: `signup done`,
       })
 
@@ -53,20 +54,20 @@ app.post('/api/signup', function (req, res) {
       const errorCode = error.code;
       const errorMessage = error.message;
       if (errorCode === "auth/email-already-in-use") {
-        res.send({
-          status: 404,
+        res.status(400).send({
+          // status: 404,
           message: `email already exists`,
         })
       }
       else if (errorCode === "auth/invalid-email") {
-        res.send({
-          status: 404,
+        res.status(400).send({
+          // status: 404,
           message: `Invalid Email`,
         })
       }
       else {
-        res.send({
-          status: 404,
+        res.status(400).send({
+          // status: 404,
           message: errorMessage,
         })
       }
@@ -564,7 +565,7 @@ app.post(`/api/search`, (req, res) => {
       var results = [];
       for (var key of Object.keys(data)) {
         console.log(data[key].phone);
-        if (data[key].email === text || data[key].name === text || data[key].phone == text)
+        if (data[key].email.toLowerCase() === text.toLowerCase() || data[key].name.toLowerCase() === text.toLowerCase() || data[key].phone.toLowerCase() == text.toLowerCase())
           results.push(data[key]);
       }
       res.status(200).send({
@@ -694,12 +695,12 @@ app.post('/api/geoquery', (req, res) => {
 
 /* ********************************************All Users API***********************************/
 
-app.get('/api/allusers' , (req,res) =>{
+app.get('/api/allUsers', (req, res) => {
   const dbRef = ref(getDatabase());
   get(child(dbRef, `users/`)).then((snapshot) => {
     if (snapshot.exists()) {
       var data = snapshot.val();
-      res.status(202).send({
+      res.status(200).send({
         // status: 404,
         message: data
       })
@@ -728,18 +729,18 @@ app.get('/api/allusers' , (req,res) =>{
 
 /* ********************************************Contacts API***********************************/
 
-app.post('/api/contacts',(req,res) =>{
+app.post('/api/contacts', (req, res) => {
   var params = req.body;
   var uid = params.uid;
   var contactUid = params.contactUid;
   const db = getDatabase();
-  const userRef =  ref(db,`users/${uid}/contacts/${contactUid}`);
-  set(ref,{
-    lastsync:"12:00"
+  const userRef = ref(db, `users/${uid}/contacts/${contactUid}`);
+  set(ref, {
+    lastsync: "12:00"
   });
 
   res.status(200).send({
-    message:'contact details created'
+    message: 'contact details created'
   })
 })
 
