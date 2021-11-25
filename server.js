@@ -646,48 +646,94 @@ app.post('/api/geostore', (req, res) => {
   var params = req.body;
   const lat = params.lat;
   const lng = params.lng;
-  const db = getFirestore();
-  // Add the hash and the lat/lng to the document. We will use the hash
-  // for queries and the lat/lng for distance comparisons.
-  const londonRef = db.collection('cities').doc('LON');
-  londonRef.update({
+  const uid = params.uid;
+  const db = getDatabase();
+  const userRef = ref(db, `location/${uid}`);
+  set(userRef, {
     lat: lat,
     lng: lng
-  }).then(() => {
-    // ...
-    res.status(202).send({
-      // status: 202,
-      message: 'geo location stored'
-    })
-  });
+  })
+  res.status(200).send({
+    message: 'location stored'
+  })
 })
 
 
-
 /* ********************************************geostore API END ***********************************/
-
+const geolib = require('geolib');
 /* ********************************************geoquery API ***********************************/
 app.post('/api/geoquery', (req, res) => {
   var params = req.body;
 
-  const lat = 51.5074;
-  const lng = 0.1278;
-  const hash = geofire.geohashForLocation([lat, lng]);
-  // Add the hash and the lat/lng to the document. We will use the hash
-  // for queries and the lat/lng for distance comparisons.
-  const db = getFirestore();
-  const londonRef = db.collection('cities').doc('LON');
-  londonRef.set({
-    geohash: hash,
-    lat: lat,
-    lng: lng
-  }).then(() => {
-    // ...
-    res.status(202).send({
-      // status: 202,
-      message: 'geo location stored'
+  const lat = params.lat;
+  const lng = params.lng;
+  var coords = { latitude: lat, longitude: lng }
+  var uid = params.uid;
+  var nearbyUsers=[];
+  const dbRef = ref(getDatabase());
+  get(child(dbRef, `location`)).then((snapshot) => {
+    if (snapshot.exists()) {
+      var data = snapshot.val();
+      var results = [];
+      for (var key of Object.keys(data)) {
+        var userLat = data[key].lat;
+        var userLng = data[key].lng;
+        var distance = geolib.getDistance(coords, {
+          latitude: userLat,
+          longitude: userLng,
+        })
+        distance = distance / 1000;
+        // console.log(key + "  " + distance);
+        if (distance <= 50 ) {
+          results.push(uid);
+        }
+      }
+     // console.log(results);
+
+      
+      for(var i =0;i<results.length;i++){
+          
+        get(child(dbRef, `users/${results[i]}`)).then((snapshot) => {
+          if (snapshot.exists()) {
+            var details = snapshot.val();
+            nearbyUsers.unshift(details);
+            console.log(nearbyUsers);
+          } else {
+            console.log("No details available");
+            res.status(404).send({
+              // status: 404,
+              message: `user not found from results`
+            })
+          }
+        }).catch((error) => {
+          res.status(404).send({
+            // status: 404,
+            message: error
+          })
+        });
+      }
+      for(var i =0;i<1000000000;i++){
+
+      }
+      res.status(200).send({
+        // status: 404,
+        message: nearbyUsers
+      })
+
+    } else {
+      console.log("No data available");
+      res.status(404).send({
+        // status: 404,
+        message: `users not found`
+      })
+    }
+  }).catch((error) => {
+    res.status(400).send({
+      // status: 404,
+      message: error
     })
   });
+
 
 })
 
