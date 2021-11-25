@@ -629,9 +629,27 @@ app.post('/api/geoquery', (req, res) => {
 
 /* ********************************************geoquery API END***********************************/
 
+/* ********************************************Contacts API***********************************/
 
 
 
+
+/* ********************************************Contacts API END***********************************/
+
+app.post('/api/contacts',(req,res) =>{
+  var params = req.body;
+  var uid = params.uid;
+  var contactUid = params.contactUid;
+  const db = getDatabase();
+  const userRef =  ref(db,`users/${uid}/contacts/${contactUid}`);
+  set(ref,{
+    lastsync:"12:00"
+  });
+
+  res.status(200).send({
+    message:'contact details created'
+  })
+})
 
 
 
