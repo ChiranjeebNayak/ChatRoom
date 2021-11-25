@@ -276,7 +276,7 @@ app.post('/api/createChatroom', function (req, res) {
   });
 
 
-  const userRef3 = ref(db,  "ChatRoom/" + roomId+"/users/" +uid);
+  const userRef3 = ref(db, "ChatRoom/" + roomId + "/users/" + uid);
   set(userRef3, {
     isAdmin: true
   });
@@ -285,10 +285,11 @@ app.post('/api/createChatroom', function (req, res) {
 
   // console.log(`Chatroom link = https://chat-application-841a0.web.app/#/chat/room/${roomId}`);
   // var chatRoomLink = `https://chat-application-841a0.web.app/#/chat/room/${roomId}`
-  var chatRoomLink = `http://localhost:8080/#/chat/room/${roomId}`
+  var chatRoomLink = `http://localhost:8080/#/chatroom/${roomId}`
   res.status(202).send({
     // status: 202,
-    link: chatRoomLink
+    link: chatRoomLink,
+    roomId: roomId
   })
 })
 
@@ -426,18 +427,77 @@ app.post('/api/addUser', (req, res) => {
   const params = req.body;
   const roomId = params.roomId;
   const uid = params.uid;
-  const db = ref(getDatabase());
-  var data = [];
-  
-    const userRef = ref(getDatabase(), `ChatRoom/${roomId}/users/${uid}`);
-    set(userRef, {
-      isAdmin: false
-    });
+  const pass = params.password;
 
-  res.status(200).send({
-    // status: 202,
-    message: 'User added'
+  const db = ref(getDatabase(), `ChatRoom/${roomId}`);
+  const adminRef = ref(getDatabase(), `ChatRoom/${roomId}/Admins`)
+  const userRef = ref(getDatabase(), `ChatRoom/${roomId}/users/${uid}`);
+  onValue(db, (snapshot) => {
+    let chatroomData = snapshot.val();
+    // console.log(chatroomData,pass,roomId);
+    console.log(chatroomData);
+    if (chatroomData.password === pass) {
+      onValue(adminRef, (snapshot2) => {
+        var data = snapshot2.val();
+        // console.log(data);
+        if (data) {
+          data.forEach(element => {
+            if (element === uid) {
+              set(userRef, {
+                isAdmin: true
+              })
+                .then(() => {
+                  console.log('1');
+                  res.status(200).send({
+                    message: 'User added'
+                  })
+                }).catch(err => {
+                  console.log('2');
+
+                  res.status(400).send({
+                    message: err,
+                  })
+                })
+            }
+            else {
+              set(userRef, {
+                isAdmin: false
+              })
+                .then(() => {
+                  console.log('3');
+
+                  res.status(200).send({
+                    message: 'User added'
+                  })
+                })
+                .catch(err => {
+                  console.log('4');
+
+                  res.status(400).send({
+                    message: err
+                  })
+                })
+            }
+          });
+        }
+        else {
+          res.status(404).send({
+            message: 'chatroom not found',
+          })
+        }
+
+      });
+    }
+    else {
+      res.status(400).send({
+        message: 'password mismatch',
+      })
+    }
   })
+
+
+
+
 
 
 })
@@ -458,20 +518,23 @@ app.delete('/api/removeUser', (req, res) => {
   //var adminUid = params.adminUid;
 
 
-  const db = ref(getDatabase());
+  // const db = ref(getDatabase());
   const userRef = ref(getDatabase(), `ChatRoom/${roomId}/users/${uid}`)
-  remove(userRef).then(()=>{
-     res.status(200).send({
+  remove(userRef).then(() => {
+
+
+
+    res.status(200).send({
       // status: 202,
       message: 'User removed'
     })
   })
-  .catch((error)=>{
-    res.status(500).send({
-      // status: 202,
-      message:error
+    .catch((error) => {
+      res.status(500).send({
+        // status: 202,
+        message: error
+      })
     })
-  })
 
 
 
@@ -526,24 +589,25 @@ app.post(`/api/search`, (req, res) => {
 /* ********************************************Search API END***********************************/
 
 /* ********************************************DeleteChatRooom API ***********************************/
-app.delete(`/api/deleteChatroom`, (req, res) => {
+app.post(`/api/deleteChatroom`, (req, res) => {
   const params = req.body;
   const roomId = params.roomId;
+  console.log(roomId);
   const db = getDatabase();
   const databaseRef = ref(db, 'ChatRoom/' + roomId);
   //delete chatroom
-  remove(databaseRef).then(()=>{
+  remove(databaseRef).then(() => {
 
     res.status(200).send({
       // status: 202,
       message: 'Chatroom Deleted'
     })
-  }).catch(error=>{
+  }).catch(error => {
     res.status(500).send({
       // status: 202,
       message: error
     })
-  }) 
+  })
 })
 
 
