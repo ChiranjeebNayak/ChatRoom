@@ -594,44 +594,16 @@ const cron = require('node-cron')
 /* ********************************************Schedule API ***********************************/
 app.post('/api/schedule', (req, res) => {
   var params = req.body;
-  var msg = params.msg;
-  var email = params.email;
-  var time = params.time;
-  const mailDetails = {
-    from: 'chiranjeebnayak.37@gmail.com',
-    to: 'codemap01@gmail.com',
-    subject: 'mail from nodemailer',
-    text: 'Hello from node!!'
-  }
+  var text = params.text;
 console.log('start print');
-  // const transporter = nodemailer.createTransport({
-  //   service: 'gmail',
-  //   auth: {
-  //     user: 'emailid',
-  //     pass: 'password'
-  //   }
-  // });
+ 
 
-  cron.schedule(`* * * * * *`, () => {
-    console.log('hello');
-    res.status(200).send({
-      message: `mail sent`
-    })
-    // transporter.sendMail(mailDetails, (error, info) => {
-    //   if (error) {
-    //     console.log(error);
-    //     res.status(400).send({
-    //       message: `error`
-    //     })
-    //   }
-    //   else {
-    //     console.log(`email sent ${info.response}`);
-    //     res.status(200).send({
-    //       message: `mail sent`
-    //     })
-    //   }
-    // })
-  })
+  cron.schedule(`32,33 * * * *`, () => {
+    console.log(text);
+
+  });
+
+  
 
 })
 
